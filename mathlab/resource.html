@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contributor Resource | Math-LAB</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --bg: #f8fafc;
+            --text: #1e293b;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: #64748b;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+        
+        .back-btn:hover { color: var(--primary); }
+
+        h2 { margin: 0; font-size: 1.2rem; }
+        .badge {
+            background: #e0e7ff;
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+
+        /* --- Split Layout --- */
+        .split-container {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 70px); /* Fill remaining height */
+            overflow: hidden;
+        }
+
+        .pane {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pane-header {
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Left Pane (PDF) */
+        .left-pane {
+            border-right: 1px solid #e2e8f0;
+            background: white;
+        }
+
+        iframe.pdf-viewer {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 12px;
+            background: #f1f5f9;
+        }
+
+        /* Right Pane (Video) */
+        .right-pane {
+            background: #f8fafc;
+        }
+
+        iframe.video-player {
+            width: 100%;
+            height: 100%; /* Or set a fixed aspect ratio */
+            max-height: 600px;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Loading State */
+        #loader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loader">Loading resources...</div>
+
+    <header>
+        <div style="display:flex; align-items:center;">
+            <a href="index.html" class="back-btn">← Back</a>
+            <div style="margin-left: 20px; border-left: 2px solid #e2e8f0; padding-left: 20px;">
+                <h2 id="contributorName">...</h2>
+            </div>
+            <span id="topicBadge" class="badge">...</span>
+        </div>
+    </header>
+
+    <div class="split-container">
+        <div class="pane left-pane">
+            <div class="pane-header">📄 Study Notes</div>
+            <iframe id="pdfFrame" class="pdf-viewer" src=""></iframe>
+        </div>
+
+        <div class="pane right-pane">
+            <div class="pane-header">🎥 Video Explanation</div>
+            <iframe id="videoFrame" class="video-player" src="" allowfullscreen></iframe>
+        </div>
+    </div>
+
+   <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Your Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpIi-_7VUr5EQ1zkZxp_QeVyDgn768N0Q",
+            authDomain: "math-lab-aa147.firebaseapp.com",
+            projectId: "math-lab-aa147",
+            storageBucket: "math-lab-aa147.firebasestorage.app",
+            messagingSenderId: "266019534367",
+            appId: "1:266019534367:web:72acb86a6d476bd3d4872a",
+            measurementId: "G-4SWMY3Q7T2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- HELPER 1: Fix YouTube Links ---
+        function getSmartVideoUrl(url) {
+            if (!url) return "";
+            // Converts "watch?v=xyz" to "embed/xyz"
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            if (match && match[2].length === 11) {
+                return `https://www.youtube.com/embed/${match[2]}`;
+            }
+            return url; // Return original if regex fails
+        }
+
+        // --- HELPER 2: Fix Google Drive Links ---
+        function getSmartPdfUrl(url) {
+            if (!url) return "";
+            // Converts "view?usp=sharing" to "preview"
+            if (url.includes("drive.google.com")) {
+                // Extract the ID
+                const idMatch = url.match(/\/d\/(.*?)\//);
+                if (idMatch && idMatch[1]) {
+                    return `https://drive.google.com/file/d/${idMatch[1]}/preview`;
+                }
+            }
+            return url;
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const docId = urlParams.get('id');
+
+        async function loadResource() {
+            if (!docId) {
+                document.getElementById('loader').innerHTML = "<p>Error: No ID provided in URL.</p>";
+                return;
+            }
+
+            try {
+                const docRef = doc(db, "contributors", docId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+
+                    // 1. Set Text Info
+                    document.getElementById('contributorName').innerText = data.name || "Contributor";
+                    document.getElementById('topicBadge').innerText = data.topicId || "Topic"; 
+                    
+                    // 2. Set PDF (with Smart Fix)
+                    if(data.pdfUrl) {
+                        const cleanPdf = getSmartPdfUrl(data.pdfUrl);
+                        document.getElementById('pdfFrame').src = cleanPdf;
+                    }
+
+                    // 3. Set Video (with Smart Fix)
+                    if(data.videoUrl) {
+                        const cleanVideo = getSmartVideoUrl(data.videoUrl);
+                        document.getElementById('videoFrame').src = cleanVideo;
+                    }
+                    
+                    // Hide Loader
+                    document.getElementById('loader').style.display = 'none';
+                } else {
+                    document.getElementById('loader').innerHTML = "<p>Resource not found.</p>";
+                }
+            } catch (error) {
+                console.error("Error details:", error);
+                document.getElementById('loader').innerHTML = `<p style='color:red'>Error: ${error.message}</p>`;
+            }
+        }
+
+        loadResource();
+    </script>
+</body>
+</html>

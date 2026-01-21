@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math-LAB | Campus Connect</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --text: #1e293b;
+      --primary: #4f46e5;
+      --card: #ffffff;
+      --accent: #818cf8;
+      --overlay: rgba(15, 23, 42, 0.8);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: white;
+      padding: 60px 10%;
+      text-align: center;
+
+    }
+
+    header h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1100px;
+      margin: 50px auto;
+    }
+
+    .intro {
+      text-align: center;
+    }
+
+    .intro h2 {
+      font-size: 2.5rem;
+      color: var(--text);
+    }
+
+    .intro p {
+      color: #64748b;
+      margin-top: 10px;
+    }
+
+    /* --- Topic Grid --- */
+    .topic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 25px;
+    }
+
+    .topic-card {
+      background: var(--card);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .topic-card:hover {
+      transform: translateY(-8px);
+      border-color: var(--primary);
+      box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.1);
+    }
+
+    .topic-card h3 {
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+
+    .topic-card .meta {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    /* --- Modal Styles --- */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--overlay);
+      backdrop-filter: blur(8px);
+      display: none;
+      /* Hidden by default */
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: white;
+      width: 100%;
+      max-width: 500px;
+      border-radius: 30px;
+      padding: 40px;
+      position: relative;
+      text-align: center;
+      animation: slideUp 0.4s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(50px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 25px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #64748b;
+    }
+
+    .contributor-img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 20px;
+      border: 4px solid var(--primary);
+    }
+
+    .modal-content h2 {
+      margin-bottom: 5px;
+    }
+
+    .modal-content .role {
+      color: var(--primary);
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    .modal-content .bio {
+      color: #64748b;
+      line-height: 1.6;
+      margin-bottom: 25px;
+    }
+
+    .btn-download {
+      display: inline-block;
+      padding: 12px 30px;
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: 0.3s;
+    }
+
+    .btn-download:hover {
+      background: #4338ca;
+    }
+
+    .classwise {
+      margin-top: 60px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    #mainContentArea {
+      min-height: 50vh;
+    }
+    .loading-text {
+      text-align: center;
+      color: #64748b;
+      margin-top: 50px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Math-LAB</h1>
+    <p>Student-Curated Mathematics Resources</p>
+  </header>
+
+  <div class="container">
+    <div class="intro">
+      <h2>Select a Topic</h2>
+      <p>Click on any module to view the material and meet the contributor.</p>
+    </div>
+
+    <div id="mainContentArea">
+      <p class="loading-text">Loading topics...</p>
+    </div>
+
+    <div class="modal" id="contributorModal">
+      <div class="modal-content" style="max-width: 600px;">
+        <span class="close-btn" id="closeModalBtn">&times;</span>
+        <h2 id="modalTitle">Topic Resources</h2>
+        <p id="modalSub" style="margin-bottom: 20px; color: #64748b;">Select a contributor to view their specific notes.</p>
+        <div id="contributorsList" style="text-align: left;">
+            <p style="text-align:center;">Loading contributors...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+  apiKey: "AIzaSyBpIi-_7VUr5EQ1zkZxp_QeVyDgn768N0Q",
+  authDomain: "math-lab-aa147.firebaseapp.com",
+  projectId: "math-lab-aa147",
+  storageBucket: "math-lab-aa147.firebasestorage.app",
+  messagingSenderId: "266019534367",
+  appId: "1:266019534367:web:72acb86a6d476bd3d4872a",
+  measurementId: "G-4SWMY3Q7T2"
+};
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // --- DOM Elements ---
+    const mainContentArea = document.getElementById('mainContentArea');
+    const modal = document.getElementById('contributorModal');
+    const listContainer = document.getElementById('contributorsList');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    // --- 1. Fetch Topics and Build Page ---
+    async function initPage() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "topics"));
+        const topics = [];
+        
+        querySnapshot.forEach((doc) => {
+          topics.push({ id: doc.id, ...doc.data() });
+        });
+
+        // Group topics by Category
+        const grouped = topics.reduce((acc, topic) => {
+          const cat = topic.category || "General";
+          if (!acc[cat]) acc[cat] = [];
+          acc[cat].push(topic);
+          return acc;
+        }, {});
+
+        // Render HTML
+        mainContentArea.innerHTML = '';
+        
+        for (const [category, topicList] of Object.entries(grouped)) {
+          // Create Section Header
+          const sectionHtml = `
+            <div class="classwise">
+              <h1>${category}</h1>
+            </div>
+            <div class="topic-grid" id="grid-${category.replace(/\s+/g, '-')}"></div>
+          `;
+          mainContentArea.innerHTML += sectionHtml;
+
+          // Create Cards inside this section's grid
+          const gridId = `grid-${category.replace(/\s+/g, '-')}`;
+          const gridEl = document.getElementById(gridId);
+
+          topicList.forEach(topic => {
+            const card = document.createElement('div');
+            card.className = 'topic-card';
+            card.onclick = () => openTopic(topic.id, topic.title);
+            card.innerHTML = `
+              <div>
+                <h3>${topic.title}</h3>
+                <p>${topic.description}</p>
+              </div>
+              <span class="meta">View Contributors</span>
+            `;
+            gridEl.appendChild(card);
+          });
+        }
+
+      } catch (error) {
+        console.error("Error loading topics:", error);
+        mainContentArea.innerHTML = `<p class="loading-text" style="color:red">Failed to load content. Check console.</p>`;
+      }
+    }
+
+    // --- 2. Open Modal and Fetch Contributors ---
+    window.openTopic = async function(topicId, topicTitle) {
+      document.getElementById('modalTitle').innerText = topicTitle;
+      modal.style.display = 'flex';
+      listContainer.innerHTML = '<p style="text-align:center; color:#64748b">Loading contributors...</p>';
+
+      try {
+        // Query contributors where topicId matches
+        const q = query(collection(db, "contributors"), where("topicId", "==", topicId));
+        const querySnapshot = await getDocs(q);
+
+        listContainer.innerHTML = ''; // Clear loading text
+
+        if (querySnapshot.empty) {
+            listContainer.innerHTML = '<p style="text-align:center;">No contributors found for this topic yet.</p>';
+            return;
+        }
+
+        querySnapshot.forEach((doc) => {
+          const person = doc.data();
+          // We link to the resource page passing the CONTRIBUTOR'S ID
+          const resourceLink = `resource.html?id=${doc.id}`; 
+          
+          const personHTML = `
+            <div style="display: flex; align-items: center; gap: 15px; background: #f1f5f9; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #e2e8f0;">
+              <img src="${person.img}" alt="${person.name}" style="width: 65px; height: 65px; border-radius: 50%; border: 3px solid #4f46e5; object-fit: cover;">
+              <div style="flex-grow: 1;">
+                <h4 style="margin: 0; color: #1e293b; font-size: 1.1rem;">${person.name}</h4>
+                <p style="font-size: 0.8rem; color: #4f46e5; margin: 0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">${person.role}</p>
+                <p style="font-size: 0.85rem; color: #64748b; margin: 4px 0 0 0; line-height: 1.4;">${person.bio}</p>
+              </div>
+              <a href="${resourceLink}" class="btn-download" style="padding: 10px 20px; font-size: 0.85rem; white-space: nowrap;">View</a>
+            </div>
+          `;
+          listContainer.innerHTML += personHTML;
+        });
+
+      } catch (error) {
+        console.error("Error loading contributors:", error);
+        listContainer.innerHTML = '<p>Error loading data.</p>';
+      }
+    };
+
+    // --- Modal Logic ---
+    closeModalBtn.onclick = () => modal.style.display = 'none';
+    window.onclick = (event) => {
+      if (event.target == modal) modal.style.display = 'none';
+    };
+
+    // Start App
+    initPage();
+  </script>
+
+</body>
+
+</html>
